@@ -1,0 +1,72 @@
+
+
+
+
+#define BLYNK_PRINT Serial
+
+
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+
+// You should get Auth Token in the Blynk App.
+// Go to the Project Settings (nut icon).
+char auth[] = "ahEguiotSa-wRy7P5oanknJkrFvv8p9a";
+
+// Your WiFi credentials.
+// Set password to "" for open networks.
+char ssid[] = "Asus";
+char pass[] = "12345678";
+int ledPin = 13; // choose the pin for the LED
+
+int val = 0; // variable for reading the pin status
+int counter = 0;
+int currentState = 0;
+int previousState = 0;
+float bill=0;
+float units=0;
+float calculatebill(float units) //function to calculate bill amount based on units consumed
+{
+  if(units<=100)
+   { bill=units*1.5;}
+  else if(units>100 && units<=300)
+   { bill=units*3.5;}
+  else 
+      {
+        bill=units*5;
+      }
+}
+void setup() {
+pinMode(ledPin, OUTPUT); // declare LED as output
+Serial.begin(9600);
+Blynk.begin(auth, ssid, pass);
+}
+BLYNK_READ(V1)
+{
+  Blynk.virtualWrite(V1,units);
+  Blynk.virtualWrite(V2,bill); 
+}
+void loop(){
+int sensorValue = analogRead(A0);; // read input value
+if (sensorValue <=500) { // check if the input is HIGH (button released)
+digitalWrite(ledPin, HIGH); // turn LED on
+currentState = 1;
+}
+else {
+digitalWrite(ledPin, LOW); // turn LED off
+currentState = 0;
+}
+if(currentState != previousState){
+if(currentState == 1){
+delay(500);
+counter = counter + 1;
+Serial.println(counter);
+ 
+delay(500);
+}}
+
+previousState = currentState;
+delay(250);
+units=counter/5; //assuming 5 blinks is one unit
+bill=calculatebill(units);
+Blynk.run();
+}
